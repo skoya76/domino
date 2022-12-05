@@ -117,5 +117,3 @@ exit 1
 #  dc=${c[0]}
 #  log $dc
 #done
-
-

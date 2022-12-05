@@ -732,7 +732,7 @@ func (r *Replica) handleAcceptReply(areply *menciusproto.AcceptReply) {
 			if EARLY_COMMIT_ACK { //Mencius reply commit earlier
 				if inst.status != READY {
 					if inst.lb.clientProposal != nil && !r.Dreply {
-						//logger.Infof("Sending early commit ack for cmdId = %d", inst.lb.clientProposal.CommandId)
+						logger.Infof("Sending early commit ack for cmdId = %d", inst.lb.clientProposal.CommandId)
 						r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp},
 							inst.lb.clientProposal.Reply)
 					}

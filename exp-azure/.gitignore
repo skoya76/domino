@@ -5,3 +5,4 @@ fastpaxos
 
 *.dat
 *.log
+latency
