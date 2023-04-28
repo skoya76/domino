@@ -340,8 +340,6 @@ func (c *EpaxosClient) WaitReply(addr string) (int32, bool, string, bool) {
 	if err := reply.Unmarshal(reader); err != nil {
 		logger.Fatal("Error when reading:", err)
 	}
-	logger.Infof("yの中身: %v", reply.Slowpath)
-	logger.Infof("xの中身: %v", reply.Slowpath)
 	if reply.OK != 0 {
 		if reply.Slowpath != 0 {
 			return reply.CommandId, true, string(reply.Value), true
