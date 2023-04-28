@@ -6,3 +6,10 @@ fastpaxos
 *.dat
 *.log
 latency
+
+vm-list.config
+server-location.config
+replica-location.config
+client-location.config
+exp-list.config
+default.confg

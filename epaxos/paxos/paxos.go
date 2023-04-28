@@ -389,7 +389,7 @@ func (r *Replica) bcastCommit(instance int32, ballot int32, command []state.Comm
 
 func (r *Replica) handlePropose(propose *genericsmr.Propose) {
 	if !r.IsLeader {
-		preply := &genericsmrproto.ProposeReplyTS{FALSE, -1, state.NIL, 0}
+		preply := &genericsmrproto.ProposeReplyTS{FALSE, -1, state.NIL, 0,FALSE}
 		r.ReplyProposeTS(preply, propose.Reply)
 		return
 	}
@@ -646,7 +646,8 @@ func (r *Replica) handleAcceptReply(areply *paxosproto.AcceptReply) {
 						TRUE,
 						inst.lb.clientProposals[i].CommandId,
 						state.NIL,
-						inst.lb.clientProposals[i].Timestamp}
+						inst.lb.clientProposals[i].Timestamp,
+						FALSE}
 					r.ReplyProposeTS(propreply, inst.lb.clientProposals[i].Reply)
 				}
 			}
@@ -685,7 +686,8 @@ func (r *Replica) executeCommands() {
 							TRUE,
 							inst.lb.clientProposals[j].CommandId,
 							val,
-							inst.lb.clientProposals[j].Timestamp}
+							inst.lb.clientProposals[j].Timestamp,
+							FALSE}
 						r.ReplyProposeTS(propreply, inst.lb.clientProposals[j].Reply)
 					}
 				}
