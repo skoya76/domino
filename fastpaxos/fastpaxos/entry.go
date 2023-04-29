@@ -18,6 +18,7 @@ const (
 type Entry struct {
 	op     *rpc.Operation
 	status int
+	timestamp int64
 }
 
 func (entry *Entry) SetOp(op *rpc.Operation) {
