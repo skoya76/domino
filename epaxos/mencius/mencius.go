@@ -731,11 +731,16 @@ func (r *Replica) handleAcceptReply(areply *menciusproto.AcceptReply) {
 			// start change by x
 			if EARLY_COMMIT_ACK { //Mencius reply commit earlier
 				if inst.status != READY {
-					if inst.lb.clientProposal != nil && !r.Dreply {
-						logger.Infof("Sending early commit ack for cmdId = %d", inst.lb.clientProposal.CommandId)
-						r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp,FALSE},
-							inst.lb.clientProposal.Reply)
-					}
+					//if inst.lb.clientProposal != nil && !r.Dreply {
+					//	logger.Infof("Sending early commit ack for cmdId = %d", inst.lb.clientProposal.CommandId)
+					//	r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp,FALSE},
+					//		inst.lb.clientProposal.Reply)
+					//}
+					// added by @skoya76
+					if inst.lb.clientProposal != nil {
+						inst.lb.clientProposal.Timestamp = time.Now().UnixNano()
+					}	
+					// added by @skoya76
 				}
 			}
 			// end change by x
@@ -795,11 +800,11 @@ func (r *Replica) updateBlocking(instance int32) {
 					// give client the all clear
 					dlog.Printf("Sending ACK for req. %d\n", inst.lb.clientProposal.CommandId)
 					//// start change by x
-					if !EARLY_COMMIT_ACK {
-						//logger.Infof("Sending mencius commit ack for cmdId = %d", inst.lb.clientProposal.CommandId)
-						r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp, FALSE},
-							inst.lb.clientProposal.Reply)
-					}
+					//if !EARLY_COMMIT_ACK {
+					//	//logger.Infof("Sending mencius commit ack for cmdId = %d", inst.lb.clientProposal.CommandId)
+					//	r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp, FALSE},
+					//		inst.lb.clientProposal.Reply)
+					//}
 					//// end change by x
 					//// start of original code
 					//r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp},
@@ -887,6 +892,11 @@ func (r *Replica) executeCommands() {
 			if present && confInst < i && r.instanceSpace[confInst].status != EXECUTED && state.Conflict(r.instanceSpace[confInst].command, inst.command) {
 				break
 			}
+
+			startTime := inst.lb.clientProposal.Timestamp
+			endTime := time.Now().UnixNano()
+			elapsed := time.Duration(endTime - startTime)
+			logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
 
 			val := inst.command.Execute(r.State)
 

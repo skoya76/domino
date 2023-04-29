@@ -656,13 +656,15 @@ func (r *Replica) handleAcceptReply(areply *paxosproto.AcceptReply) {
 			//		r.ReplyProposeTS(propreply, inst.lb.clientProposals[i].Reply)
 			//	}
 			//}
-
+			
+			// added by @skoya76
 			if inst.lb.clientProposals != nil {
 				// give client the all clear
 				for i := 0; i < len(inst.cmds); i++ {
 					inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
 				}
 			}
+			// added by @skoya76
 
 			r.recordInstanceMetadata(r.instanceSpace[areply.Instance])
 			r.sync() //is this necessary?
@@ -692,12 +694,15 @@ func (r *Replica) executeCommands() {
 			if r.instanceSpace[i].cmds != nil {
 				inst := r.instanceSpace[i]
 				for j := 0; j < len(inst.cmds); j++ {
-					startTime := inst.lb.clientProposals[j].Timestamp
-					endTime := time.Now().UnixNano()
-					elapsed := time.Duration(endTime - startTime)
-					logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
+					if inst.lb != nil && inst.lb.clientProposals[j] != nil {
+						startTime := inst.lb.clientProposals[j].Timestamp
+						endTime := time.Now().UnixNano()
+						elapsed := time.Duration(endTime - startTime)
+						logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
+					}
 
 					val := inst.cmds[j].Execute(r.State)
+
 					if r.Dreply && inst.lb != nil && inst.lb.clientProposals != nil {
 						propreply := &genericsmrproto.ProposeReplyTS{
 							TRUE,
