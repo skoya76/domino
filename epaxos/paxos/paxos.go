@@ -12,7 +12,12 @@ import (
 	"domino/epaxos/genericsmrproto"
 	"domino/epaxos/paxosproto"
 	"domino/epaxos/state"
+
+	"github.com/op/go-logging"
+
 )
+
+var logger =  logging.MustGetLogger("paxos")
 
 const CHAN_BUFFER_SIZE = 200000
 const TRUE = uint8(1)
@@ -639,16 +644,23 @@ func (r *Replica) handleAcceptReply(areply *paxosproto.AcceptReply) {
 		if inst.lb.acceptOKs+1 > r.N>>1 {
 			inst = r.instanceSpace[areply.Instance]
 			inst.status = COMMITTED
-			if inst.lb.clientProposals != nil && !r.Dreply {
+			//if inst.lb.clientProposals != nil && !r.Dreply {
+			//	// give client the all clear
+			//	for i := 0; i < len(inst.cmds); i++ {
+			//		propreply := &genericsmrproto.ProposeReplyTS{
+			//			TRUE,
+			//			inst.lb.clientProposals[i].CommandId,
+			//			state.NIL,
+			//			inst.lb.clientProposals[i].Timestamp,
+			//			FALSE}
+			//		r.ReplyProposeTS(propreply, inst.lb.clientProposals[i].Reply)
+			//	}
+			//}
+
+			if inst.lb.clientProposals != nil {
 				// give client the all clear
 				for i := 0; i < len(inst.cmds); i++ {
-					propreply := &genericsmrproto.ProposeReplyTS{
-						TRUE,
-						inst.lb.clientProposals[i].CommandId,
-						state.NIL,
-						inst.lb.clientProposals[i].Timestamp,
-						FALSE}
-					r.ReplyProposeTS(propreply, inst.lb.clientProposals[i].Reply)
+					inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
 				}
 			}
 
@@ -680,6 +692,11 @@ func (r *Replica) executeCommands() {
 			if r.instanceSpace[i].cmds != nil {
 				inst := r.instanceSpace[i]
 				for j := 0; j < len(inst.cmds); j++ {
+					startTime := inst.lb.clientProposals[j].Timestamp
+					endTime := time.Now().UnixNano()
+					elapsed := time.Duration(endTime - startTime)
+					logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
+
 					val := inst.cmds[j].Execute(r.State)
 					if r.Dreply && inst.lb != nil && inst.lb.clientProposals != nil {
 						propreply := &genericsmrproto.ProposeReplyTS{
