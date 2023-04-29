@@ -893,10 +893,12 @@ func (r *Replica) executeCommands() {
 				break
 			}
 
-			startTime := inst.lb.clientProposal.Timestamp
-			endTime := time.Now().UnixNano()
-			elapsed := time.Duration(endTime - startTime)
-			logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
+			if inst.lb != nil && inst.lb.clientProposal != nil {
+				startTime := inst.lb.clientProposal.Timestamp
+				endTime := time.Now().UnixNano()
+				elapsed := time.Duration(endTime - startTime)
+				logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
+			}
 
 			val := inst.command.Execute(r.State)
 

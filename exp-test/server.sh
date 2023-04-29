@@ -41,7 +41,7 @@ if [ "$mode" == "start" ]; then
     elif [ "${app}" == "mencius" ]; then
       # Mencius
       echo "Starting Mencius replica server $id"
-      ./epaxos -i ${id} -c test.config -r replica-location.config -p m -m false > server-$id.log 2>&1 &
+      ./epaxos -i ${id} -c test.config -r replica-location.config -p m -m true > server-$id.log 2>&1 &
     elif [ "${app}" == "paxos" ] || [ "${app}" == "multipaxos" ]; then
       # Multi-Paxos
       echo "Starting Multi-Paxos replica server $id"
