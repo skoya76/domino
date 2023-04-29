@@ -114,6 +114,13 @@ func (e *Exec) strongconnect(v *Instance, index *int) bool {
 				time.Sleep(1000 * 1000)
 			}
 			for idx := 0; idx < len(w.Cmds); idx++ {
+				if w.lb != nil && w.lb.clientProposals[idx] != nil {
+					startTime := w.lb.clientProposals[idx].Timestamp
+					endTime := time.Now().UnixNano()
+					elapsed := time.Duration(endTime - startTime)
+					logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
+				}
+
 				val := w.Cmds[idx].Execute(e.r.State)
 				if e.r.Dreply && w.lb != nil && w.lb.clientProposals != nil {
 					e.r.ReplyProposeTS(

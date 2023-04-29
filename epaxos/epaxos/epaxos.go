@@ -15,7 +15,7 @@ import (
 	"domino/epaxos/epaxosproto"
 	"domino/epaxos/fastrpc"
 	"domino/epaxos/genericsmr"
-	"domino/epaxos/genericsmrproto"
+	//"domino/epaxos/genericsmrproto"
 	"domino/epaxos/state"
 )
 
@@ -677,7 +677,7 @@ func (r *Replica) bcastAccept(replica int32, instance int32, ballot int32, count
 var ec epaxosproto.Commit
 var ecs epaxosproto.CommitShort
 
-func (r *Replica) bcastCommit(replica int32, instance int32, cmds []state.Command, seq int32, deps [DS]int32) {
+func (r *Replica)bcastCommit(replica int32, instance int32, cmds []state.Command, seq int32, deps [DS]int32) {
 	defer func() {
 		if err := recover(); err != nil {
 			dlog.Println("Commit bcast failed:", err)
@@ -1107,17 +1107,23 @@ func (r *Replica) handlePreAcceptReply(pareply *epaxosproto.PreAcceptReply) {
 		dlog.Printf("Fast path for instance %d.%d\n", pareply.Replica, pareply.Instance)
 		r.InstanceSpace[pareply.Replica][pareply.Instance].Status = epaxosproto.COMMITTED
 		r.updateCommitted(pareply.Replica)
-		if inst.lb.clientProposals != nil && !r.Dreply {
-			// give clients the all clear
+		//if inst.lb.clientProposals != nil && !r.Dreply {
+		//	// give clients the all clear
+		//	for i := 0; i < len(inst.lb.clientProposals); i++ {
+		//		r.ReplyProposeTS(
+		//			&genericsmrproto.ProposeReplyTS{
+		//				TRUE,
+		//				inst.lb.clientProposals[i].CommandId,
+		//				state.NIL,
+		//				inst.lb.clientProposals[i].Timestamp,
+		//				TRUE},
+		//			inst.lb.clientProposals[i].Reply)
+		//	}
+		//}
+
+		if inst.lb.clientProposals != nil {
 			for i := 0; i < len(inst.lb.clientProposals); i++ {
-				r.ReplyProposeTS(
-					&genericsmrproto.ProposeReplyTS{
-						TRUE,
-						inst.lb.clientProposals[i].CommandId,
-						state.NIL,
-						inst.lb.clientProposals[i].Timestamp,
-						TRUE},
-					inst.lb.clientProposals[i].Reply)
+				inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
 			}
 		}
 
@@ -1172,17 +1178,23 @@ func (r *Replica) handlePreAcceptOK(pareply *epaxosproto.PreAcceptOK) {
 		//logger.Infof("preAcceptOK fast path for instance %d.%d", r.Id, pareply.Instance)
 		r.InstanceSpace[r.Id][pareply.Instance].Status = epaxosproto.COMMITTED
 		r.updateCommitted(r.Id)
-		if inst.lb.clientProposals != nil && !r.Dreply {
-			// give clients the all clear
+		//if inst.lb.clientProposals != nil && !r.Dreply {
+		//	// give clients the all clear
+		//	for i := 0; i < len(inst.lb.clientProposals); i++ {
+		//		r.ReplyProposeTS(
+		//			&genericsmrproto.ProposeReplyTS{
+		//				TRUE,
+		//				inst.lb.clientProposals[i].CommandId,
+		//				state.NIL,
+		//				inst.lb.clientProposals[i].Timestamp,
+		//				TRUE},
+		//			inst.lb.clientProposals[i].Reply)
+		//	}
+		//}
+
+		if inst.lb.clientProposals != nil {
 			for i := 0; i < len(inst.lb.clientProposals); i++ {
-				r.ReplyProposeTS(
-					&genericsmrproto.ProposeReplyTS{
-						TRUE,
-						inst.lb.clientProposals[i].CommandId,
-						state.NIL,
-						inst.lb.clientProposals[i].Timestamp,
-						TRUE},
-					inst.lb.clientProposals[i].Reply)
+				inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
 			}
 		}
 
@@ -1291,17 +1303,23 @@ func (r *Replica) handleAcceptReply(areply *epaxosproto.AcceptReply) {
 	if inst.lb.acceptOKs+1 > r.N/2 {
 		r.InstanceSpace[areply.Replica][areply.Instance].Status = epaxosproto.COMMITTED
 		r.updateCommitted(areply.Replica)
-		if inst.lb.clientProposals != nil && !r.Dreply {
-			// give clients the all clear
+		//if inst.lb.clientProposals != nil && !r.Dreply {
+		//	// give clients the all clear
+		//	for i := 0; i < len(inst.lb.clientProposals); i++ {
+		//		r.ReplyProposeTS(
+		//			&genericsmrproto.ProposeReplyTS{
+		//				TRUE,
+		//				inst.lb.clientProposals[i].CommandId,
+		//				state.NIL,
+		//				inst.lb.clientProposals[i].Timestamp,
+		//				FALSE},
+		//			inst.lb.clientProposals[i].Reply)
+		//	}
+		//}
+
+		if inst.lb.clientProposals != nil {
 			for i := 0; i < len(inst.lb.clientProposals); i++ {
-				r.ReplyProposeTS(
-					&genericsmrproto.ProposeReplyTS{
-						TRUE,
-						inst.lb.clientProposals[i].CommandId,
-						state.NIL,
-						inst.lb.clientProposals[i].Timestamp,
-						FALSE},
-					inst.lb.clientProposals[i].Reply)
+				inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
 			}
 		}
 
