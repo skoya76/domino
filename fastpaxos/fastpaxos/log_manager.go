@@ -194,8 +194,7 @@ func (m *DefaultLogManager) Commit(idx *LogIdx, entry *Entry) error {
 	}
 
 	entry.timestamp = time.Now().UnixNano()
-	//logger.Debugf("Commit() committed opId = (%s) at non-empty idx = (%s)", entry.op.Id, idx)
-	logger.Infof("Commit() committed opId = (%s) at non-empty idx = (%s)", entry.op.Id, idx)
+	logger.Debugf("Commit() committed opId = (%s) at non-empty idx = (%s)", entry.op.Id, idx)
 
 	return nil
 }
@@ -216,15 +215,10 @@ func (m *DefaultLogManager) Exec(execCh chan *rpc.Operation) {
 			logger.Fatalf("Exec() error: %v", err)
 		}
 
-		//logger.Debugf("Executes idx = %s", m.logNextExecIdx)
-		logger.Infof("Executes idx = %s", m.logNextExecIdx)
-		// Gets the current timestamp
-		now := time.Now().UnixNano()
+		logger.Debugf("Executes idx = %s", m.logNextExecIdx)
 
-		// Calculates the duration between commit and execution
-		duration := now - entry.timestamp
 
-		// Logs the duration
+		duration := time.Now().UnixNano() - entry.timestamp
 		logger.Infof("Executes idx = %s, duration = %v ns", m.logNextExecIdx, duration)
 
 		execCh <- entry.GetOp() // May block if the channel is full

@@ -24,7 +24,6 @@ type ClientProposal struct {
 	Delay     time.Duration
 	Timestamp int64
 	ClientId  string
-	duration int64
 }
 
 type LeaderProposal struct {
