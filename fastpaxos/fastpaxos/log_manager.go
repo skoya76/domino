@@ -207,6 +207,8 @@ func (m *DefaultLogManager) Exec(execCh chan *rpc.Operation) {
 		entry, err := m.log.Get(m.logNextExecIdx)
 		for err == nil && (entry == nil || !entry.IsCommitted()) {
 			m.logExecCond.Wait()
+			duration := time.Now().UnixNano() - entry.timestamp
+			logger.Infof("Executes idx = %s, duration = %v ns", m.logNextExecIdx, duration)
 			entry, err = m.log.Get(m.logNextExecIdx)
 		}
 		m.logExecCond.L.Unlock()
@@ -216,10 +218,6 @@ func (m *DefaultLogManager) Exec(execCh chan *rpc.Operation) {
 		}
 
 		logger.Debugf("Executes idx = %s", m.logNextExecIdx)
-
-
-		duration := time.Now().UnixNano() - entry.timestamp
-		logger.Infof("Executes idx = %s, duration = %v ns", m.logNextExecIdx, duration)
 
 		execCh <- entry.GetOp() // May block if the channel is full
 

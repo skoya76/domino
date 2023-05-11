@@ -166,7 +166,7 @@ func (fp *FastPaxos) startCmdCh() {
 func (fp *FastPaxos) acceptClientProposal(proposal *ClientProposal) {
 	//TODO Ignores an operation that is committed via the slow path before the
 	//client's proposal arrives.
-	entry := &Entry{proposal.Op, ENTRY_FAST_ACCEPTED, time.Now().UnixNano()}
+	entry := &Entry{op: proposal.Op, status: ENTRY_FAST_ACCEPTED}
 	idx, err := fp.lm.FastPathAccept(entry)
 
 	if err != nil {
@@ -184,7 +184,7 @@ func (fp *FastPaxos) acceptLeaderProposal(proposal *LeaderProposal) {
 	logger.Debugf("Slow-path tries to accept opId = (%s) at idx = (%s)",
 		proposal.Op.Id, proposal.Idx)
 
-	entry := &Entry{proposal.Op, ENTRY_SLOW_ACCEPTED, time.Now().UnixNano()}
+	entry := &Entry{op :proposal.Op, status: ENTRY_SLOW_ACCEPTED}
 	err := fp.lm.SlowPathAccept(proposal.Idx, entry)
 
 	if err != nil {
@@ -197,7 +197,7 @@ func (fp *FastPaxos) commitLeaderProposal(commit *LeaderCommit) {
 
 	logger.Debugf("Leader commits opId = (%s) at idx = (%s)", commit.Op.Id, commit.Idx)
 
-	entry := &Entry{op: commit.Op}
+	entry := &Entry{op: commit.Op, timestamp: time.Now().UnixNano()}
 	err := fp.lm.Commit(commit.Idx, entry)
 
 	if err != nil {
