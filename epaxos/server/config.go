@@ -48,7 +48,7 @@ const (
 	Flag_mencius_early_commit_ack = "mencius.early_commit_ack"
 
 	// Added by @skoya76
-	Flag_measure_commit_to_exec_time = "server.measure.cmtexec.time"
+	Flag_measure_commit_to_exec_time = "epaxos.measure.cmtexec.time"
 )
 
 func loadConfig(configFile, replicaFile string) {
