@@ -75,9 +75,9 @@ type LeaderBookkeeping struct {
 }
 
 func NewReplica(id int, peerAddrList []string, thrifty bool, exec bool, dreply bool, durable bool,
-	keyList []string, initVal string,
+	keyList []string, initVal string, measure_commit_to_exec_time bool,
 ) *Replica {
-	r := &Replica{genericsmr.NewReplica(id, peerAddrList, thrifty, exec, dreply, keyList, initVal),
+	r := &Replica{genericsmr.NewReplica(id, peerAddrList, thrifty, exec, dreply, keyList, initVal, measure_commit_to_exec_time),
 		make(chan fastrpc.Serializable, genericsmr.CHAN_BUFFER_SIZE),
 		make(chan fastrpc.Serializable, genericsmr.CHAN_BUFFER_SIZE),
 		make(chan fastrpc.Serializable, genericsmr.CHAN_BUFFER_SIZE),
@@ -644,27 +644,26 @@ func (r *Replica) handleAcceptReply(areply *paxosproto.AcceptReply) {
 		if inst.lb.acceptOKs+1 > r.N>>1 {
 			inst = r.instanceSpace[areply.Instance]
 			inst.status = COMMITTED
-			//if inst.lb.clientProposals != nil && !r.Dreply {
-			//	// give client the all clear
-			//	for i := 0; i < len(inst.cmds); i++ {
-			//		propreply := &genericsmrproto.ProposeReplyTS{
-			//			TRUE,
-			//			inst.lb.clientProposals[i].CommandId,
-			//			state.NIL,
-			//			inst.lb.clientProposals[i].Timestamp,
-			//			FALSE}
-			//		r.ReplyProposeTS(propreply, inst.lb.clientProposals[i].Reply)
-			//	}
-			//}
-			
-			// added by @skoya76
-			if inst.lb.clientProposals != nil {
-				// give client the all clear
-				for i := 0; i < len(inst.cmds); i++ {
-					inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
+			if !r.MeasureCommitToExecTime {
+				if inst.lb.clientProposals != nil && !r.Dreply {
+					// give client the all clear
+					for i := 0; i < len(inst.cmds); i++ {
+						propreply := &genericsmrproto.ProposeReplyTS{
+							TRUE,
+							inst.lb.clientProposals[i].CommandId,
+							state.NIL,
+							inst.lb.clientProposals[i].Timestamp,
+							FALSE}
+						r.ReplyProposeTS(propreply, inst.lb.clientProposals[i].Reply)
+					}
+				}
+			} else {
+				if inst.lb.clientProposals != nil {
+					for i := 0; i < len(inst.cmds); i++ {
+						inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
+					}
 				}
 			}
-			// added by @skoya76
 
 			r.recordInstanceMetadata(r.instanceSpace[areply.Instance])
 			r.sync() //is this necessary?
@@ -694,11 +693,14 @@ func (r *Replica) executeCommands() {
 			if r.instanceSpace[i].cmds != nil {
 				inst := r.instanceSpace[i]
 				for j := 0; j < len(inst.cmds); j++ {
-					if inst.lb != nil && inst.lb.clientProposals[j] != nil {
-						startTime := inst.lb.clientProposals[j].Timestamp
-						endTime := time.Now().UnixNano()
-						elapsed := time.Duration(endTime - startTime)
-						logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
+
+					if r.MeasureCommitToExecTime{
+						if inst.lb != nil && inst.lb.clientProposals[j] != nil {
+							startTime := inst.lb.clientProposals[j].Timestamp
+							endTime := time.Now().UnixNano()
+							elapsed := time.Duration(endTime - startTime)
+							logger.Infof("Elapsed time from commit to execution start: %d ns", elapsed)
+						}
 					}
 
 					val := inst.cmds[j].Execute(r.State)
