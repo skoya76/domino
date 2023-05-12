@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-protocols=(dynamic epaxos fastpaxos)
+protocols=(epaxos fastpaxos)
 
 for protocol in "${protocols[@]}"
 do
@@ -18,13 +18,21 @@ do
                 data=`cat latency/$exp_id/$protocol/client*-$c-*.log | grep -w "1 , 1 , 0 , [0-9]\+ , [0-9]\+"`
             fi
             num=`echo "$data" | wc -l`
-            echo -n $exp_id $c $replicas
-            echo -n " "
             if [ "$num" == "0" ] || [ "$num" == "1" ]; then
-                echo "error"
-            else 
-                echo "$data" | sed -e "s/ , /,/g" | cut -d "," -f 4 | sort -n | awk 'BEGIN{OFMT="%d"} { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'
+                err=true
+                break
             fi
+            err=false
+            av=`echo "$data" | sed -e "s/ , /,/g" | cut -d "," -f 4 | sort -n | awk 'BEGIN{OFMT="%d"} { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'`
+            total=$((total + av))
         done
-    done > latency/$protocol.txt
+        average=$(awk "BEGIN {printf \"%.0f\", $total/${#client[@]}}")  # total を client の数で割る
+        echo -n $LINE
+        echo -n " "
+        if [ "$err" == "false" ]; then
+            echo "$average"
+        else
+            echo "error"
+        fi
+    done #> latency/$protocol.txt
 done
