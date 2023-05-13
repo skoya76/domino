@@ -76,9 +76,9 @@ type LeaderBookkeeping struct {
 }
 
 func NewReplica(id int, peerAddrList []string, thrifty bool, exec bool, dreply bool,
-	keyList []string, initVal string,
+	keyList []string, initVal string, measure_commit_to_exec_time bool,
 ) *Replica {
-	r := &Replica{genericsmr.NewReplica(id, peerAddrList, thrifty, exec, dreply, keyList, initVal),
+	r := &Replica{genericsmr.NewReplica(id, peerAddrList, thrifty, exec, dreply, keyList, initVal, measure_commit_to_exec_time),
 		make(chan *gpaxosproto.Prepare, CHAN_BUFFER_SIZE),
 		make(chan *gpaxosproto.M_1a, CHAN_BUFFER_SIZE),
 		make(chan *gpaxosproto.M_1b, CHAN_BUFFER_SIZE),

@@ -100,7 +100,7 @@ func main() {
 		rpc.Register(rep)
 	} else if doGpaxos {
 		logger.Info("Starting Generalized Paxos replica...")
-		rep := gpaxos.NewReplica(replicaId, nodeList, thrifty, exec, dreply, keyList, initVal)
+		rep := gpaxos.NewReplica(replicaId, nodeList, thrifty, exec, dreply, keyList, initVal, measure_commit_to_exec_time)
 		rpc.Register(rep)
 	} else if doPaxos {
 		logger.Info("Starting classic Paxos replica...")
