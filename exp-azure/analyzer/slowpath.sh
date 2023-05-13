@@ -11,11 +11,13 @@ do
         clients=`echo $LINE | cut -d " " -f 2` 
         replicas=`echo $LINE | cut -d " " -f 3` 
         IFS=',' read -ra client <<< "$clients"
+        total=0
+        average=0
         for c in "${client[@]}"; do
             if [ "$protocol" == "epaxos" ]; then
-                data=`cat latency/$exp_id/$protocol/client*-$c-*.log | grep -w "0 , 1 , 0 , [0-9]\+ , [0-9]\+"`
+                data=`cat latency/$exp_id/$protocol/client*-$c-*.log | grep -w "0 , 1 , 1 , [0-9]\+ , [0-9]\+"`
             else
-                data=`cat latency/$exp_id/$protocol/client*-$c-*.log | grep -w "1 , 1 , 0 , [0-9]\+ , [0-9]\+"`
+                data=`cat latency/$exp_id/$protocol/client*-$c-*.log | grep -w "1 , 1 , 1 , [0-9]\+ , [0-9]\+"`
             fi
             num=`echo "$data" | wc -l`
             if [ "$num" == "0" ] || [ "$num" == "1" ]; then
@@ -34,5 +36,5 @@ do
         else
             echo "error"
         fi
-    done #> latency/$protocol.txt
+    done > latency/$protocol.txt
 done

@@ -8,7 +8,7 @@ do
     do
         #grep -r -w "[0-1] , [0-1] , [0-1] , [0-9]\+ , [0-9]\+"
         exp_id=`echo $LINE | cut -d " " -f 1`
-        data=`cat latency/$exp_id/$protocol/client* | grep -w "[0-1] , [0-1] , [0-1] , [0-9]\+ , [0-9]\+"`
+        data=`cat latency/$exp_id/$protocol/client* | grep -w "[0-1] , 1 , 1 , [0-9]\+ , [0-9]\+"`
         num=`echo "$data" | wc -l`
         echo -n $LINE 
         echo -n " "
