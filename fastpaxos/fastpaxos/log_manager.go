@@ -172,7 +172,6 @@ func (m *DefaultLogManager) Commit(idx *LogIdx, entry *Entry) error {
 				", error: %v", entry.op.Id, idx, err)
 		}
 		entry.SetCommitted()
-
 		logger.Debugf("Commit() committed opId = (%s) at empty idx = (%s)", entry.op.Id, idx)
 
 		return nil
@@ -192,8 +191,7 @@ func (m *DefaultLogManager) Commit(idx *LogIdx, entry *Entry) error {
 	} else {
 		e.SetCommitted()
 	}
-
-	entry.timestamp = time.Now().UnixNano()
+	e.SetStartDuration(time.Now().UnixNano())
 	logger.Debugf("Commit() committed opId = (%s) at non-empty idx = (%s)", entry.op.Id, idx)
 
 	return nil
@@ -215,11 +213,7 @@ func (m *DefaultLogManager) Exec(execCh chan *rpc.Operation) {
 			logger.Fatalf("Exec() error: %v", err)
 		}
 
-		//logger.Debugf("Executes idx = %s", m.logNextExecIdx)
-
-		duration := time.Now().UnixNano() - entry.timestamp
-		logger.Infof("Executes idx = %s, duration = %v ns", m.logNextExecIdx, duration)
-
+		logger.Debugf("start=%v Exec_time=(%v), duratin=%v",entry.GetStartDuration(), time.Now().UnixNano(),time.Now().UnixNano()-entry.GetStartDuration()) 
 		execCh <- entry.GetOp() // May block if the channel is full
 
 		if err = m.log.IncIdx(m.logNextExecIdx); err != nil {

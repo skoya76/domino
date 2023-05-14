@@ -57,3 +57,11 @@ func (entry *Entry) String() string {
 		entry.op.Key + ", " +
 		entry.op.Val
 }
+
+func (entry *Entry) SetStartDuration(t int64){
+	entry.timestamp = t
+}
+
+func (entry *Entry) GetStartDuration() int64{
+	return entry.timestamp
+}

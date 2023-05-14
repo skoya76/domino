@@ -197,7 +197,7 @@ func (fp *FastPaxos) commitLeaderProposal(commit *LeaderCommit) {
 
 	logger.Debugf("Leader commits opId = (%s) at idx = (%s)", commit.Op.Id, commit.Idx)
 
-	entry := &Entry{op: commit.Op, timestamp: time.Now().UnixNano()}
+	entry := &Entry{op: commit.Op}
 	err := fp.lm.Commit(commit.Idx, entry)
 
 	if err != nil {
