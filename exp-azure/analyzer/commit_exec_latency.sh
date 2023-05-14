@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-protocols=(dynamic epaxos fastpaxos mencius paxos)
+protocols=(epaxos)
 
 for protocol in "${protocols[@]}"
 do
@@ -8,7 +8,7 @@ do
     do
         #grep -r -w "[0-1] , [0-1] , [0-1] , [0-9]\+ , [0-9]\+"
         exp_id=`echo $LINE | cut -d " " -f 1`
-        data=`cat latency/$exp_id/$protocol/server* | grep -E ' [[:digit:]]+ ns'`
+        data=`cat latency/$exp_id/$protocol/server* | grep --binary-files=without-match -E ' [[:digit:]]+ ns'`
         num=`echo "$data" | wc -l`
         echo -n $LINE 
         echo -n " "
