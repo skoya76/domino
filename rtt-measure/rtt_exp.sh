@@ -2,7 +2,7 @@
 
 #set -x
 
-hosts_list="config.txt"
+hosts_list="vm-list.config"
 
 # use UTC throughout the experiment
 export TZ=UTC
@@ -10,13 +10,13 @@ export TZ=UTC
 # results will be stored here
 base_dir=~/aws-tools/data/aws-inter-region-rtt
 
-ssh_option="-i ~/.ssh/id_rsa -y"
+#ssh_option="-i ~/.ssh/id_rsa -y"
+ssh_option="-i ~/.labssh/.ssh/id_rsa -y"
 
 #regions=(ohio virginia california oregon mumbai seoul singapore sydney tokyo canada frankfurt ireland london saopaulo)
 regions=($(cut -d " " -f 1 "$hosts_list"))
-region_prefix=bft-
 
-user=ubuntu
+user=koya
 
 server_command=ping
 server_option="-c 10"
