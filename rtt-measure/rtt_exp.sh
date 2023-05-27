@@ -8,7 +8,7 @@ hosts_list="vm-list.config"
 export TZ=UTC
 
 # results will be stored here
-base_dir=~/aws-tools/data/aws-inter-region-rtt
+base_dir=rtt
 
 #ssh_option="-i ~/.ssh/id_rsa -y"
 ssh_option="-i ~/.labssh/.ssh/id_rsa -y"
@@ -47,7 +47,7 @@ do
 		echo ">>> $i-$j: $(now)"
 
 		# start client
-		ssh -oStrictHostKeyChecking=no $ssh_option "$server_ip" -l $user $server_command $server_option "$client_ip" > "$output" &
+		ssh -oStrictHostKeyChecking=no $ssh_option "$server_ip" -l $user $server_command $server_option "$client_ip" #> "$output"
 	done
 
 	echo ">> $i-Region-End: $(now)"
