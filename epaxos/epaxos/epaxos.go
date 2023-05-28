@@ -1180,7 +1180,7 @@ func (r *Replica) handlePreAcceptOK(pareply *epaxosproto.PreAcceptOK) {
 		//logger.Infof("preAcceptOK fast path for instance %d.%d", r.Id, pareply.Instance)
 		r.InstanceSpace[r.Id][pareply.Instance].Status = epaxosproto.COMMITTED
 		r.updateCommitted(r.Id)
-		if !r.Dreply {
+		if !r.MeasureCommitToExecTime {
 			if inst.lb.clientProposals != nil && !r.Dreply {
 				// give clients the all clear
 				for i := 0; i < len(inst.lb.clientProposals); i++ {
