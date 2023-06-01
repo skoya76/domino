@@ -213,7 +213,7 @@ func (m *DefaultLogManager) Exec(execCh chan *rpc.Operation) {
 			logger.Fatalf("Exec() error: %v", err)
 		}
 
-		logger.Debugf("start=%v Exec_time=(%v), duratin=%v",entry.GetStartDuration(), time.Now().UnixNano(),time.Now().UnixNano()-entry.GetStartDuration()) 
+		logger.Debugf("duration = %v ns",time.Now().UnixNano()-entry.GetStartDuration()) 
 		execCh <- entry.GetOp() // May block if the channel is full
 
 		if err = m.log.IncIdx(m.logNextExecIdx); err != nil {
