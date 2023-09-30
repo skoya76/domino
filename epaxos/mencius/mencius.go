@@ -733,7 +733,7 @@ func (r *Replica) handleAcceptReply(areply *menciusproto.AcceptReply) {
 				if inst.status != READY {
 					if inst.lb.clientProposal != nil && !r.Dreply {
 						//logger.Infof("Sending early commit ack for cmdId = %d", inst.lb.clientProposal.CommandId)
-						r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp},
+						r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp, FALSE},
 							inst.lb.clientProposal.Reply)
 					}
 				}
@@ -797,7 +797,7 @@ func (r *Replica) updateBlocking(instance int32) {
 					//// start change by x
 					if !EARLY_COMMIT_ACK {
 						//logger.Infof("Sending mencius commit ack for cmdId = %d", inst.lb.clientProposal.CommandId)
-						r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp},
+						r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp, FALSE},
 							inst.lb.clientProposal.Reply)
 					}
 					//// end change by x
@@ -895,7 +895,7 @@ func (r *Replica) executeCommands() {
 				//r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, state.NIL, inst.lb.clientProposal.Timestamp},
 				//	inst.lb.clientProposal.Reply)
 				//logger.Infof("Sending execution ack for cmdId = %d", inst.lb.clientProposal.CommandId)
-				r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, val, inst.lb.clientProposal.Timestamp},
+				r.ReplyProposeTS(&genericsmrproto.ProposeReplyTS{TRUE, inst.lb.clientProposal.CommandId, val, inst.lb.clientProposal.Timestamp, FALSE},
 					inst.lb.clientProposal.Reply)
 			}
 			inst.status = EXECUTED

@@ -1115,7 +1115,8 @@ func (r *Replica) handlePreAcceptReply(pareply *epaxosproto.PreAcceptReply) {
 						TRUE,
 						inst.lb.clientProposals[i].CommandId,
 						state.NIL,
-						inst.lb.clientProposals[i].Timestamp},
+						inst.lb.clientProposals[i].Timestamp
+						TRUE},
 					inst.lb.clientProposals[i].Reply)
 			}
 		}
@@ -1179,7 +1180,8 @@ func (r *Replica) handlePreAcceptOK(pareply *epaxosproto.PreAcceptOK) {
 						TRUE,
 						inst.lb.clientProposals[i].CommandId,
 						state.NIL,
-						inst.lb.clientProposals[i].Timestamp},
+						inst.lb.clientProposals[i].Timestamp
+						TRUE},
 					inst.lb.clientProposals[i].Reply)
 			}
 		}
@@ -1297,7 +1299,8 @@ func (r *Replica) handleAcceptReply(areply *epaxosproto.AcceptReply) {
 						TRUE,
 						inst.lb.clientProposals[i].CommandId,
 						state.NIL,
-						inst.lb.clientProposals[i].Timestamp},
+						inst.lb.clientProposals[i].Timestamp
+						FALSE},
 					inst.lb.clientProposals[i].Reply)
 			}
 		}

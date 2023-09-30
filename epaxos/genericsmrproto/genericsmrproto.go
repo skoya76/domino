@@ -31,6 +31,7 @@ type ProposeReplyTS struct {
 	CommandId int32
 	Value     state.Value
 	Timestamp int64
+	Slowpath uint8
 }
 
 type Read struct {
