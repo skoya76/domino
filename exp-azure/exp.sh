@@ -3,6 +3,7 @@ vm_list=`cat vm-list.config`
 start_time=`date +%s`
 cat exp-list.config | while read LINE
 do
+    ./rtt_exp.sh
     exp_id=`echo $LINE | cut -d " " -f 1`
     clients=`echo $LINE | cut -d " " -f 2`
     leader=`echo $LINE | cut -d " " -f 3 | cut -d "," -f 1`
@@ -48,7 +49,7 @@ do
     end_time=`date +%s`
     run_time=$((end_time - start_time))
     echo "exp id $exp_id finish time --------> $run_time"
-
+    python3 notifier.py $exp_id
 done
 end_time=`date +%s`
 run_time=$((end_time - start_time))
