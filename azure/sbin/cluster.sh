@@ -16,3 +16,5 @@ $sbin/vm.sh $1
 
 # Lists VM IPs
 $sbin/vm-ip.sh $1
+
+python3 /home/koya/Develop/src/domino/exp-azure/notifier.py cluster
