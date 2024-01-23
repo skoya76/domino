@@ -164,9 +164,11 @@ func NewDynamicPaxos(
 	}
 
 	p.ReplicaNum = len(p.followerAddrList) + 1
-	f := (p.ReplicaNum - 1) / 2
-	p.Majority = f + 1
-	p.FastQuorum = int(math.Ceil((3.0*float64(f))/2.0)) + 1
+	// f := (p.ReplicaNum - 1) / 2
+	// p.Majority = f + 1
+	// p.FastQuorum = int(math.Ceil((3.0*float64(f))/2.0)) + 1
+	p.Majority = int(math.Ceil(float64(p.ReplicaNum + 1) / 2.0))
+	p.FastQuorum = int(math.Ceil((3.0*float64(p.ReplicaNum))/4.0))
 
 	pShardList, fpShardList := make([]int32, 0), make([]int32, 0)
 	for shard, leaderId := range p.pShardLeaderIdMap {
