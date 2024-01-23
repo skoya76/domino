@@ -164,7 +164,7 @@ func NewDynamicPaxos(
 	}
 
 	p.ReplicaNum = len(p.followerAddrList) + 1
-	f := (p.ReplicaNum - 1) / 2
+	// f := (p.ReplicaNum - 1) / 2
 	p.Majority = int(math.Ceil(float64(p.ReplicaNum + 1) / 2.0))
 	p.FastQuorum = int(math.Ceil((3.0*float64(p.ReplicaNum))/4.0))
 

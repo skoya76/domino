@@ -99,7 +99,7 @@ func newDynamicClientLib(id, dcId, configFile, replicaFile, targetDcId string) *
 	//		rList[i] = p.GetStr(r)
 	//}
 	n := len(rAddrList)
-	f := (n - 1) / 2
+	// f := (n - 1) / 2
 
 	p := common.NewProperties()
 	p.Load(configFile)
