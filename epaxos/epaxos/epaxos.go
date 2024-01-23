@@ -26,7 +26,7 @@ var isUseBeacon bool = false // Added by xy for fixing Epaxos beacon bug
 const MAX_DEPTH_DEP = 10
 const TRUE = uint8(1)
 const FALSE = uint8(0)
-const DS = 5
+const DS = 10
 const ADAPT_TIME_SEC = 10
 
 //const MAX_BATCH = 1000
@@ -126,11 +126,27 @@ type LeaderBookkeeping struct {
 	tpaOKs            int
 }
 
+func newInt32ArrayWithDefault(size int, defaultValue int32) [DS]int32 {
+    var arr [DS]int32
+    for i := 0; i < size; i++ {
+        arr[i] = defaultValue
+    }
+    return arr
+}
+
+func newInt32SliceWithDefault(size int, defaultValue int32) []int32 {
+    arr := make([]int32, size)
+    for i := range arr {
+        arr[i] = defaultValue
+    }
+    return arr
+}
+
 func NewReplica(id int, peerAddrList []string, thrifty bool, exec bool, dreply bool, beacon bool, durable bool,
-	keyList []string, initVal string,
+	keyList []string, initVal string, measure_commit_to_exec_time bool,
 ) *Replica {
 	r := &Replica{
-		genericsmr.NewReplica(id, peerAddrList, thrifty, exec, dreply, keyList, initVal),
+		genericsmr.NewReplica(id, peerAddrList, thrifty, exec, dreply, keyList, initVal, measure_commit_to_exec_time),
 		make(chan fastrpc.Serializable, genericsmr.CHAN_BUFFER_SIZE),
 		make(chan fastrpc.Serializable, genericsmr.CHAN_BUFFER_SIZE),
 		make(chan fastrpc.Serializable, genericsmr.CHAN_BUFFER_SIZE),
@@ -145,7 +161,7 @@ func NewReplica(id int, peerAddrList []string, thrifty bool, exec bool, dreply b
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		make([][]*Instance, len(peerAddrList)),
 		make([]int32, len(peerAddrList)),
-		[DS]int32{-1, -1, -1, -1, -1},
+		newInt32ArrayWithDefault(DS, -1),
 		make([]int32, len(peerAddrList)),
 		nil,
 		make([]map[state.Key]int32, len(peerAddrList)),
@@ -445,7 +461,7 @@ func (r *Replica) run() {
 			break
 		case <-r.OnClientConnect:
 			//logger.Infof("weird %d; conflicted %d; slow %d; happy %d\n", weird, conflicted, slow, happy)
-			//log.Printf("weird %d; conflicted %d; slow %d; happy %d\n", weird, conflicted, slow, happy)
+			log.Printf("weird %d; conflicted %d; slow %d; happy %d\n", weird, conflicted, slow, happy)
 			weird, conflicted, slow, happy = 0, 0, 0, 0
 
 		case iid := <-r.instancesToRecover:
@@ -677,7 +693,7 @@ func (r *Replica) bcastAccept(replica int32, instance int32, ballot int32, count
 var ec epaxosproto.Commit
 var ecs epaxosproto.CommitShort
 
-func (r *Replica) bcastCommit(replica int32, instance int32, cmds []state.Command, seq int32, deps [DS]int32) {
+func (r *Replica)bcastCommit(replica int32, instance int32, cmds []state.Command, seq int32, deps [DS]int32) {
 	defer func() {
 		if err := recover(); err != nil {
 			dlog.Println("Commit bcast failed:", err)
@@ -892,7 +908,7 @@ func (r *Replica) startPhase1(replica int32, instance int32, ballot int32, propo
 		epaxosproto.PREACCEPTED,
 		seq,
 		deps,
-		&LeaderBookkeeping{proposals, 0, 0, true, 0, 0, 0, deps, []int32{-1, -1, -1, -1, -1}, nil, false, false, nil, 0}, 0, 0,
+		&LeaderBookkeeping{proposals, 0, 0, true, 0, 0, 0, deps, newInt32SliceWithDefault(DS, -1), nil, false, false, nil, 0}, 0, 0,
 		nil}
 
 	r.updateConflicts(cmds, r.Id, instance, seq)
@@ -1107,16 +1123,25 @@ func (r *Replica) handlePreAcceptReply(pareply *epaxosproto.PreAcceptReply) {
 		dlog.Printf("Fast path for instance %d.%d\n", pareply.Replica, pareply.Instance)
 		r.InstanceSpace[pareply.Replica][pareply.Instance].Status = epaxosproto.COMMITTED
 		r.updateCommitted(pareply.Replica)
-		if inst.lb.clientProposals != nil && !r.Dreply {
-			// give clients the all clear
-			for i := 0; i < len(inst.lb.clientProposals); i++ {
-				r.ReplyProposeTS(
-					&genericsmrproto.ProposeReplyTS{
-						TRUE,
-						inst.lb.clientProposals[i].CommandId,
-						state.NIL,
-						inst.lb.clientProposals[i].Timestamp},
-					inst.lb.clientProposals[i].Reply)
+		if !r.MeasureCommitToExecTime {
+			if inst.lb.clientProposals != nil && !r.Dreply {
+				// give clients the all clear
+				for i := 0; i < len(inst.lb.clientProposals); i++ {
+					r.ReplyProposeTS(
+						&genericsmrproto.ProposeReplyTS{
+							TRUE,
+							inst.lb.clientProposals[i].CommandId,
+							state.NIL,
+							inst.lb.clientProposals[i].Timestamp,
+							TRUE},
+						inst.lb.clientProposals[i].Reply)
+				}
+			}
+		}else{
+			if inst.lb.clientProposals != nil {
+				for i := 0; i < len(inst.lb.clientProposals); i++ {
+					inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
+				}
 			}
 		}
 
@@ -1171,16 +1196,25 @@ func (r *Replica) handlePreAcceptOK(pareply *epaxosproto.PreAcceptOK) {
 		//logger.Infof("preAcceptOK fast path for instance %d.%d", r.Id, pareply.Instance)
 		r.InstanceSpace[r.Id][pareply.Instance].Status = epaxosproto.COMMITTED
 		r.updateCommitted(r.Id)
-		if inst.lb.clientProposals != nil && !r.Dreply {
-			// give clients the all clear
-			for i := 0; i < len(inst.lb.clientProposals); i++ {
-				r.ReplyProposeTS(
-					&genericsmrproto.ProposeReplyTS{
-						TRUE,
-						inst.lb.clientProposals[i].CommandId,
-						state.NIL,
-						inst.lb.clientProposals[i].Timestamp},
-					inst.lb.clientProposals[i].Reply)
+		if !r.MeasureCommitToExecTime {
+			if inst.lb.clientProposals != nil && !r.Dreply {
+				// give clients the all clear
+				for i := 0; i < len(inst.lb.clientProposals); i++ {
+					r.ReplyProposeTS(
+						&genericsmrproto.ProposeReplyTS{
+							TRUE,
+							inst.lb.clientProposals[i].CommandId,
+							state.NIL,
+							inst.lb.clientProposals[i].Timestamp,
+							TRUE},
+						inst.lb.clientProposals[i].Reply)
+				}
+			}
+		}else{
+			if inst.lb.clientProposals != nil {
+				for i := 0; i < len(inst.lb.clientProposals); i++ {
+					inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
+				}
 			}
 		}
 
@@ -1289,19 +1323,28 @@ func (r *Replica) handleAcceptReply(areply *epaxosproto.AcceptReply) {
 	if inst.lb.acceptOKs+1 > r.N/2 {
 		r.InstanceSpace[areply.Replica][areply.Instance].Status = epaxosproto.COMMITTED
 		r.updateCommitted(areply.Replica)
-		if inst.lb.clientProposals != nil && !r.Dreply {
-			// give clients the all clear
-			for i := 0; i < len(inst.lb.clientProposals); i++ {
-				r.ReplyProposeTS(
-					&genericsmrproto.ProposeReplyTS{
-						TRUE,
-						inst.lb.clientProposals[i].CommandId,
-						state.NIL,
-						inst.lb.clientProposals[i].Timestamp},
-					inst.lb.clientProposals[i].Reply)
+
+		if !r.MeasureCommitToExecTime {
+			if inst.lb.clientProposals != nil && !r.Dreply {
+				// give clients the all clear
+				for i := 0; i < len(inst.lb.clientProposals); i++ {
+					r.ReplyProposeTS(
+						&genericsmrproto.ProposeReplyTS{
+							TRUE,
+							inst.lb.clientProposals[i].CommandId,
+							state.NIL,
+							inst.lb.clientProposals[i].Timestamp,
+							FALSE},
+						inst.lb.clientProposals[i].Reply)
+				}
+			}
+		}else{
+			if inst.lb.clientProposals != nil {
+				for i := 0; i < len(inst.lb.clientProposals); i++ {
+					inst.lb.clientProposals[i].Timestamp = time.Now().UnixNano()
+				}
 			}
 		}
-
 		r.recordInstanceMetadata(inst)
 		r.sync() //is this necessary here?
 
