@@ -22,6 +22,6 @@ func (c *Client) loadConfig(configFile, replicaFile string) {
 	if c.replicaNum != len(c.followerAddrList)+1 {
 		logger.Fatalf("Error: replicaNum = %d, but follower num = %d", c.replicaNum, len(c.followerAddrList))
 	}
-	f := (c.replicaNum - 1) / 2
-	c.fastQuorum = int(math.Ceil((3.0*float64(f))/2.0)) + 1
+	// f := (c.replicaNum - 1) / 2
+	c.fastQuorum = int(math.Ceil((3.0*float64(c.replicaNum))/4.0))
 }

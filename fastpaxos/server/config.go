@@ -44,9 +44,11 @@ func loadConfig(propertyFile, replicaFile string) {
 	if ReplicaNum != len(FollowerAddrList)+1 {
 		logger.Fatalf("Error: ReplicaNum = %d, but follower num = %d", ReplicaNum, len(FollowerAddrList))
 	}
-	f := (ReplicaNum - 1) / 2
-	MajorityNum = f + 1
-	FastQuorum = int(math.Ceil((3.0*float64(f))/2.0)) + 1
+	// f := (ReplicaNum - 1) / 2
+	// MajorityNum = f + 1
+	// FastQuorum = int(math.Ceil((3.0*float64(f))/2.0)) + 1
+	Majority = int(math.Ceil(float64(ReplicaNum + 1) / 2.0))
+	FastQuorum = int(math.Ceil((3.0*float64(ReplicaNum))/4.0))
 
 	// Network Addr
 	rInfo, ok := replicaDir[replicaId]
