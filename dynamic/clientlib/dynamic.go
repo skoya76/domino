@@ -98,7 +98,8 @@ func newDynamicClientLib(id, dcId, configFile, replicaFile, targetDcId string) *
 	//for i, r := range rList {
 	//		rList[i] = p.GetStr(r)
 	//}
-	f := (len(rAddrList) - 1) / 2
+	n := len(rAddrList)
+	f := (n - 1) / 2
 
 	p := common.NewProperties()
 	p.Load(configFile)
@@ -112,8 +113,8 @@ func newDynamicClientLib(id, dcId, configFile, replicaFile, targetDcId string) *
 		clock: common.NewSysNanoClock(),
 
 		replicaNum:      len(rAddrList),
-		majority:        f + 1,
-		fastQuorum:      int(math.Ceil((3.0*float64(f))/2.0)) + 1,
+		majority:        int(math.Ceil(float64(n + 1) / 2.0)),
+		fastQuorum:      int(math.Ceil((3.0*float64(n))/4.0)),
 		replicaAddrList: rAddrList,
 		replicaAddrDir:  make(map[string][]string),
 
