@@ -24,7 +24,7 @@ load_settings() {
   source $setting
 
   if [ ! -z $identity ]; then
-    SSH_OPTIONS="-i $identity"
+    SSH_OPTIONS="-i $identity -o StrictHostKeyChecking=no"
   fi
 
   if [ ! -z $username ]; then

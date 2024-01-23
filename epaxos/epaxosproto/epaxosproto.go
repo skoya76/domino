@@ -4,6 +4,8 @@ import (
 	"domino/epaxos/state"
 )
 
+const DS = 10
+
 type Prepare struct {
 	LeaderId int32
 	Replica  int32
@@ -20,7 +22,7 @@ type PrepareReply struct {
 	Status     int8
 	Command    []state.Command
 	Seq        int32
-	Deps       [5]int32
+	Deps       [DS]int32
 }
 
 type PreAccept struct {
@@ -30,7 +32,7 @@ type PreAccept struct {
 	Ballot   int32
 	Command  []state.Command
 	Seq      int32
-	Deps     [5]int32
+	Deps     [DS]int32
 }
 
 type PreAcceptReply struct {
@@ -39,8 +41,8 @@ type PreAcceptReply struct {
 	OK            uint8
 	Ballot        int32
 	Seq           int32
-	Deps          [5]int32
-	CommittedDeps [5]int32
+	Deps          [DS]int32
+	CommittedDeps [DS]int32
 }
 
 type PreAcceptOK struct {
@@ -54,7 +56,7 @@ type Accept struct {
 	Ballot   int32
 	Count    int32
 	Seq      int32
-	Deps     [5]int32
+	Deps     [DS]int32
 }
 
 type AcceptReply struct {
@@ -70,7 +72,7 @@ type Commit struct {
 	Instance int32
 	Command  []state.Command
 	Seq      int32
-	Deps     [5]int32
+	Deps     [DS]int32
 }
 
 type CommitShort struct {
@@ -79,7 +81,7 @@ type CommitShort struct {
 	Instance int32
 	Count    int32
 	Seq      int32
-	Deps     [5]int32
+	Deps     [DS]int32
 }
 
 type TryPreAccept struct {
@@ -89,7 +91,7 @@ type TryPreAccept struct {
 	Ballot   int32
 	Command  []state.Command
 	Seq      int32
-	Deps     [5]int32
+	Deps     [DS]int32
 }
 
 type TryPreAcceptReply struct {

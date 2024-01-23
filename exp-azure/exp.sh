@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 vm_list=`cat vm-list.config`
 start_time=`date +%s`
+
+./sbin/init_config.sh > server-location.config
+echo > client-location.config
+./deploy.sh dynamic fastpaxos epaxos client default.config key.dat
+
 cat exp-list.config | while read LINE
 do
-    ./rtt_exp.sh
+    #./rtt_exp.sh
     exp_id=`echo $LINE | cut -d " " -f 1`
     clients=`echo $LINE | cut -d " " -f 2`
     leader=`echo $LINE | cut -d " " -f 3 | cut -d "," -f 1`
@@ -29,12 +34,16 @@ do
         ((server_id=server_id+1))
         ((port_num=port_num+1))
     done  > replica-location.config
+
+    ./deploy.sh replica-location.config
+
     client_id=1
     for c in "${client_arr[@]}";
     do
         echo $client_id $c `echo "$vm_list" | grep $c | cut -d " " -f 2` 1 $leader
         ((client_id=client_id+1))
     done > client-location.config
+
     ./do-all-paxos.sh $exp_id "Leader"
 
     client_id=1
@@ -44,6 +53,7 @@ do
         echo $client_id $c `echo "$vm_list" | grep $c | cut -d " " -f 2` 1 $leader
         ((client_id=client_id+1))
     done > client-location.config
+
     ./do-all-paxos.sh $exp_id "noLeader"
 
     end_time=`date +%s`

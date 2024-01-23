@@ -52,7 +52,8 @@ do
   
   log "$mode ${client_app} at $dc_id $ip"
   log "Executing command: $cmd"
-  run_cmd $cmd
+  
+  #run_cmd $cmd
   run_cmd_in_background $cmd
   sleep 0.01
 done

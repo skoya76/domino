@@ -26,7 +26,7 @@ var isUseBeacon bool = false // Added by xy for fixing Epaxos beacon bug
 const MAX_DEPTH_DEP = 10
 const TRUE = uint8(1)
 const FALSE = uint8(0)
-const DS = 5
+const DS = 10
 const ADAPT_TIME_SEC = 10
 
 //const MAX_BATCH = 1000
@@ -126,6 +126,22 @@ type LeaderBookkeeping struct {
 	tpaOKs            int
 }
 
+func newInt32ArrayWithDefault(size int, defaultValue int32) [DS]int32 {
+    var arr [DS]int32
+    for i := 0; i < size; i++ {
+        arr[i] = defaultValue
+    }
+    return arr
+}
+
+func newInt32SliceWithDefault(size int, defaultValue int32) []int32 {
+    arr := make([]int32, size)
+    for i := range arr {
+        arr[i] = defaultValue
+    }
+    return arr
+}
+
 func NewReplica(id int, peerAddrList []string, thrifty bool, exec bool, dreply bool, beacon bool, durable bool,
 	keyList []string, initVal string, measure_commit_to_exec_time bool,
 ) *Replica {
@@ -145,7 +161,7 @@ func NewReplica(id int, peerAddrList []string, thrifty bool, exec bool, dreply b
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		make([][]*Instance, len(peerAddrList)),
 		make([]int32, len(peerAddrList)),
-		[DS]int32{-1, -1, -1, -1, -1},
+		newInt32ArrayWithDefault(DS, -1),
 		make([]int32, len(peerAddrList)),
 		nil,
 		make([]map[state.Key]int32, len(peerAddrList)),
@@ -892,7 +908,7 @@ func (r *Replica) startPhase1(replica int32, instance int32, ballot int32, propo
 		epaxosproto.PREACCEPTED,
 		seq,
 		deps,
-		&LeaderBookkeeping{proposals, 0, 0, true, 0, 0, 0, deps, []int32{-1, -1, -1, -1, -1}, nil, false, false, nil, 0}, 0, 0,
+		&LeaderBookkeeping{proposals, 0, 0, true, 0, 0, 0, deps, newInt32SliceWithDefault(DS, -1), nil, false, false, nil, 0}, 0, 0,
 		nil}
 
 	r.updateConflicts(cmds, r.Id, instance, seq)

@@ -22,13 +22,13 @@ do
   #run_cmd $cmd
 
   log "Deploying $files to $dc_id $ip:$dir"
-  cmd="scp $SSH_OPTIONS $files ${USER_AT}$ip:$dir/"
+  cmd="scp -o StrictHostKeyChecking=no $SSH_OPTIONS $files ${USER_AT}$ip:$dir/"
   log "Executing: $cmd"
   run_cmd $cmd
   
   log "Checking deployment files at $dc_id $ip:$dir"
   cmd="cd $dir; ls -lh"
-  cmd="ssh -n $SSH_OPTIONS ${USER_AT}$ip \"$cmd\""
+  cmd="ssh -n -o StrictHostKeyChecking=no $SSH_OPTIONS ${USER_AT}$ip \"$cmd\""
   log "Executing: $cmd"
   run_cmd $cmd
   
@@ -49,13 +49,13 @@ do
   #run_cmd $cmd
 
   log "Deploying $files to $dc_id $ip:$dir"
-  cmd="scp $SSH_OPTIONS $files ${USER_AT}$ip:$dir/"
+  cmd="scp -o StrictHostKeyChecking=no $SSH_OPTIONS $files ${USER_AT}$ip:$dir/"
   log "Executing: $cmd"
   run_cmd $cmd
   
   log "Checking deployment files at $dc_id $ip:$dir"
   cmd="cd $dir; ls -lh"
-  cmd="ssh -n $SSH_OPTIONS ${USER_AT}$ip \"$cmd\""
+  cmd="ssh -n -o StrictHostKeyChecking=no $SSH_OPTIONS ${USER_AT}$ip \"$cmd\""
   log "Executing: $cmd"
   run_cmd $cmd
   

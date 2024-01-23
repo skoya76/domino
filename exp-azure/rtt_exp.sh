@@ -18,7 +18,7 @@ regions=($(cut -d " " -f 1 "$hosts_list"))
 
 user=koya
 
-server_command="ping -c 10"
+server_command="ping -c 1"
 now() {
     echo -n "$(date +%s) $(date +'%F %H:%M:%S %:z')"
 }

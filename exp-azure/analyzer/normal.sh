@@ -20,7 +20,8 @@ do
             # Calculate standard deviation
             std_dev=$(echo "$data" | sed -e "s/ , /,/g" | cut -d "," -f 4 | awk -v mean="$mean" '{ sum += ($1 - mean)^2 } END { printf "%.2f", sqrt(sum/NR) }')
 
-            echo "$mean $std_dev"
+            # Print mean, standard deviation and data count
+            echo "$mean $std_dev $num"
         fi
     done > latency/$protocol.txt
 done
